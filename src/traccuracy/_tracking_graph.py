@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 
 import networkx as nx
 
@@ -62,7 +63,7 @@ class TrackingGraph:
         self.location_keys = location_keys
 
         # construct a dictionary from frames to node ids for easy lookup
-        self.nodes_by_frame = {}
+        self.nodes_by_frame = defaultdict(list)
         for node, attrs in self.graph.nodes.items():
             # check that every node has the time frame and location specified
             assert (
