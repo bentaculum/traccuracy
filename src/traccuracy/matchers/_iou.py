@@ -24,14 +24,15 @@ def _match_nodes(gt, res, threshold=1):
     """
     iou = np.zeros((np.max(gt) + 1, np.max(res) + 1))
 
-    overlapping_gt_labels, overlapping_res_labels, _ = get_labels_with_overlap(gt, res)
+    overlapping_gt_labels, overlapping_res_labels, ious = get_labels_with_overlap(
+        gt, res, overlap="iou"
+    )
 
-    for index in range(len(overlapping_gt_labels)):
-        iou_gt_idx = overlapping_gt_labels[index]
-        iou_res_idx = overlapping_res_labels[index]
-        intersection = np.logical_and(gt == iou_gt_idx, res == iou_res_idx)
-        union = np.logical_or(gt == iou_gt_idx, res == iou_res_idx)
-        iou[iou_gt_idx, iou_res_idx] = intersection.sum() / union.sum()
+    for gt_label, res_label, iou_val in zip(
+        overlapping_gt_labels, overlapping_res_labels, ious
+    ):
+        if iou_val >= threshold:
+            iou[gt_label, res_label] = iou_val
 
     pairs = np.where(iou >= threshold)
 
