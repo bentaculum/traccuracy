@@ -445,3 +445,26 @@ def test_matching_from_in_memory():
     ):
         matched = IOUMatcher().compute_mapping(gt_t_graph, gt_t_graph)
     assert len(matched.mapping) == len(gt_t_graph.nodes)
+
+
+def test_iou_match_with_border_margin():
+    """Matching should skip seg labels that have no graph node after border filtering."""
+    n_frames = 3
+    n_labels = 3
+    graph = get_movie_with_graph(ndims=3, n_frames=n_frames, n_labels=n_labels)
+
+    kwargs = {
+        "segmentation": graph.segmentation,
+        "location_keys": graph.location_keys,
+        "label_key": graph.label_key,
+        "border_margin": 30.0,
+    }
+    gt = TrackingGraph(graph.graph.copy(), **kwargs)
+    pred = TrackingGraph(graph.graph.copy(), **kwargs)
+    assert len(gt.graph.nodes) < len(graph.graph.nodes)
+
+    mapping = match_iou(gt, pred)
+    for gt_node, pred_node in mapping:
+        assert gt_node in gt.graph.nodes
+        assert pred_node in pred.graph.nodes
+    assert len(mapping) <= len(gt.graph.nodes)
